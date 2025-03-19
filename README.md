@@ -30,45 +30,45 @@ instead of defensive style code, I use short code but still provide strong agent
 
 ### Core Concept of GraphAgent
 
-    The main concept of GraphAgent is "one agent, one tool".
+The main concept of GraphAgent is "one agent, one tool".
 Agents can communicate with each other through Python strings
 or any other form you design (I haven't designed this part and am looking forward to your coding implementation).
 
 ### Interface for Connecting Large Language Models from Different Platforms
 
-    This Python file is an interface for connecting large language models from different platforms.
+This Python file is an interface for connecting large language models from different platforms.
 Therefore, when developers create agents, they don't need to care about which type of API they are using,
 which prompts them to focus on program development and shortens the product production time.
 The only thing they need to do is "from Agent import ZHiPu_LLM/Deepseek, etc." and instantiate the agents with some properties.
 
 ### Ease of Use of AgentNode
 
-    AgentNode is also very easy to use.
+AgentNode is also very easy to use.
 Create a Large Language Model (LLM), put it into the AgentNode class, load the tool list into AgentNode,
 and then call the agent, which will execute the tool automatically.
 
-    AgentNode is just a node and is not in any graph structure
+AgentNode is just a node and is not in any graph structure
 because I hope AgentNode can be as easy to use as numpy.ndarray and torch.Tensor.
 In this way, you can use Python keywords such as "if", "while", "for", etc. to construct complex workflows.
 
-    When the workflow is running, you can interact with the artificial intelligence by inputting content from your keyboard,
+When the workflow is running, you can interact with the artificial intelligence by inputting content from your keyboard,
 and you can also provide the output of other agents as input to the artificial intelligence when the workflow is running.
 For specific details, you can check the original code in "MultiAgentComponents.py".
 
-    I think the most programming-friendly module design is to only provide preliminary modules that are short but powerful,
+I think the most programming-friendly module design is to only provide preliminary modules that are short but powerful,
 hide the trivial API call details, maintain the original Python programming style,
 and simplify the use of the module without affecting other programmers' ability to modify the module.
 As the saying goes: "Never guess what the user will do. Just give them something iconic and stimulate their creativity!"
 
 ### Agent Tool Design Idea
 
-    In my design idea, we should provide a tool list as a prompt for the tool-specific agent
+In my design idea, we should provide a tool list as a prompt for the tool-specific agent
 so that the agent can choose one to return information about which tool to use.
 
-    In short, we give the agent a task and a tool list, and then the agent returns the name of the useful tool.
+In short, we give the agent a task and a tool list, and then the agent returns the name of the useful tool.
 Then, iterate through the tool list to match the function (tool) and run the function locally.
 
-    I stipulate that in this framework, the way we communicate with the agent is all through "Prompt".
+I stipulate that in this framework, the way we communicate with the agent is all through "Prompt".
 The format of the prompt is as follows:
 ```
 {
@@ -79,7 +79,7 @@ The format of the prompt is as follows:
 ```
 Any "reference" should be provided in a specific format before chatting with the agent.
 
-    Here is an example emphasized with the "-" symbol:
+Here is an example emphasized with the "-" symbol:
 ```
 "
 - you should answer me in short word
