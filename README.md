@@ -109,5 +109,5 @@ and return the tool name so that we can run the tool.
 
 ### Design Related to Asynchrony
 
-    I have designed some basic properties and functions for asynchrony. Since I'm not sure about your style of thread management,
+I have designed some basic properties and functions for asynchrony. Since I'm not sure about your style of thread management,
 I haven't taken further actions in this regard. If you need to, you can customize the asynchronous application by yourself.
