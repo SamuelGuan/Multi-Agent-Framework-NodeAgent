@@ -28,20 +28,20 @@ instead of defensive style code, I use short code but still provide strong agent
 
 ## Insights into the NodeAgent Framework
 
-### Core Concept of GraphAgent
+### 1. Core Concept of GraphAgent
 
 The main concept of GraphAgent is "one agent, one tool".
 Agents can communicate with each other through Python strings
 or any other form you design (I haven't designed this part and am looking forward to your coding implementation).
 
-### Interface for Connecting Large Language Models from Different Platforms
+### 2. Interface for Connecting Large Language Models from Different Platforms
 
 This Python file is an interface for connecting large language models from different platforms.
 Therefore, when developers create agents, they don't need to care about which type of API they are using,
 which prompts them to focus on program development and shortens the product production time.
 The only thing they need to do is "from Agent import ZHiPu_LLM/Deepseek, etc." and instantiate the agents with some properties.
 
-### Ease of Use of AgentNode
+### 3. Ease of Use of AgentNode
 
 AgentNode is also very easy to use.
 Create a Large Language Model (LLM), put it into the AgentNode class, load the tool list into AgentNode,
@@ -60,7 +60,7 @@ hide the trivial API call details, maintain the original Python programming styl
 and simplify the use of the module without affecting other programmers' ability to modify the module.
 As the saying goes: "Never guess what the user will do. Just give them something iconic and stimulate their creativity!"
 
-### Agent Tool Design Idea
+### 4. Agent Tool Design Idea
 
 In my design idea, we should provide a tool list as a prompt for the tool-specific agent
 so that the agent can choose one to return information about which tool to use.
