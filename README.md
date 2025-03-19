@@ -1,3 +1,5 @@
+![Uploading NodeAgent.png…]()
+
 # Multi-Agent-Framework-NodeAgent
 This is an light Open Multi-Agent Framework base on LangChain.
 specially designed for CN researchers, but everyone
