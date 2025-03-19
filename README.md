@@ -27,6 +27,18 @@ To keep the code flash, I maintain the python code style in my project and provi
 I hope everyone can easily understand my code and customize your own framework base on this framework, so
 instead of defensive style code, I use short code but still provide strong agent ability.
 
+## Fast Use
+The example file contain the some using example, including single agent and multi-agent.
+Run the example to learn more about this project.
+
+### Package Requirement
+```
+pip install langchain
+pip install langchain_community
+pip install langchain_core
+pip install ast
+pip install re
+```
 
 ## Insights into the NodeAgent Framework
 
