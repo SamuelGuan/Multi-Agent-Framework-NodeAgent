@@ -30,9 +30,9 @@ if __name__ == '__main__':
     temperature = 0.5
 
     # llm setting
-    api_key = "6ddd5fce-e59c-49bc-a80c-28539c1f95e8"
-    llm_model_version = "bot-20250312204525-5lpp5"
-    base_url = "https://ark.cn-beijing.volces.com/api/v3/bots"
+    api_key = "Your api key"
+    llm_model_version = "your model version"
+    base_url = "your model base url"
 
     # task 4 setting
     file = 'test_str_File/testFile_self_introduction.json'
