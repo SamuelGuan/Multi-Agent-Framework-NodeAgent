@@ -33,8 +33,8 @@ if __name__ == '__main__':
     # initiate the llm 1 as agent 1
     llm1 = Kimi_LLM(
         temperature,
-        llm_model_version='moonshot-v1-32k',
-        api_key='sk-qLRDFWbDyOLXs9XUchQ2lsNiKegguW4nWxV8Jq8ohfOMCaEV',
+        llm_model_version='Kimi_llm_version',
+        api_key='your api key',
         agent_name="John",
         agent_identity="a romantic man",
     )
@@ -42,27 +42,27 @@ if __name__ == '__main__':
     # initiate the llm 2 as agent 2
     llm2 = ZhiPu_LLM(
         temperature,
-        llm_model_version='glm-4',
-        api_key='38f65f59c6164d92b79ba64891557439.gSjelejfFaagMHAm',
+        llm_model_version='zhipu_llm_version',
+        api_key='your api key',
         agent_name="Alice",
         agent_identity="a beautiful gril",
     )
 
     llm3 = Qwen_LLM(
         temperature,
-        llm_model_version='qwen-omni-turbo',
-        api_key='sk-0a613206ad9f404593f23d16bdeb4ede',
+        llm_model_version='qwen_llm_version',
+        api_key='your api key',
         agent_name="Steve",
         agent_identity="a smart boy",
     )
 
     llm4 = DouBao_LLM(
         temperature,
-        llm_model_version="bot-20250312204525-5lpp5",
-        api_key="6ddd5fce-e59c-49bc-a80c-28539c1f95e8",
+        llm_model_version="doubao_llm_version",
+        api_key="your api key",
         agent_name="doubaoAI",
         agent_identity="AI_assistant",
-        llm_base_url="https://ark.cn-beijing.volces.com/api/v3/bots",
+        llm_base_url="doubao base url",
     )
 
     tool_list = [Plus(),Sub(),Mul(),Div()]
