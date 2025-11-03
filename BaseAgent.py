@@ -4,6 +4,7 @@ from abc import abstractmethod
 
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
+from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import (
     MessagesPlaceholder,
     SystemMessagePromptTemplate,
@@ -36,8 +37,9 @@ class BaseAgent(object):
         self.llm_api = llm_api
         self.llm_url = base_url
         # storing the history
-        self.store = {}
-        self.session_id = 1
+        self.session_id = 0
+        self.store = dict[str, BaseChatMessageHistory]()
+        self.createNewSession()
         # ensure the max_session_number is positive
         assert max_session_number > 0
         self.max_session_number = max_session_number
@@ -46,25 +48,80 @@ class BaseAgent(object):
         self.max_history_number = max_history_number
 
     # get the chatting history
-    def __getSessionHistory__(self, session_id: str) -> BaseChatMessageHistory:
-        if session_id not in self.store:
-            self.store[session_id] = ChatMessageHistory()
-        return self.store[session_id]
+    def __getSessionHistory__(self, session_id: int = 1) -> BaseChatMessageHistory:
+        session_key = f"UserSession NO.{session_id}"
+        if session_key not in self.store.keys():
+            self.store[session_key] = BaseChatMessageHistory()
+        return self.store[session_key]
 
     # ensure the number of session wouldn't greater than the max_session_number,
     # if greater, delete the first session and move the rest's session number to former one
     def __sessionNumberControl__(self)->None:
         if len(self.store.keys()) >= self.max_session_number:
             self.store.pop("UserSession NO.1")
-            tmpStore = dict()
+            tmpStore = dict[str, BaseChatMessageHistory]()
             for key in self.store.keys():
-                if isinstance(type(key), str):
+                if not isinstance(key, str):
                     raise ValueError("self.store.key is not str!")
                 key_copy = str(key)
                 new_key = key_copy.replace(key_copy[-1], str(int(key_copy[-1]) - 1))
                 tmpStore[new_key] = self.store[key]
             self.store = tmpStore
             self.session_id = self.max_session_number - 1
+
+    def __HistoryAppend__(self, ai_message:str, user_message:str, session_id: int = -1):
+        if session_id == -1:
+            session_id = self.session_id
+        session_key = f"UserSession NO.{session_id}"
+        history:BaseChatMessageHistory = self.__getSessionHistory__(session_key)
+        history.add_user_message(user_message)
+        history.add_ai_message(ai_message)
+        self.store[session_key] = history
+    
+
+    def __ListingAllHistory__(self) -> dict:
+        """
+        return:
+        {
+            1 :{
+                "session_key": "UserSession NO.1", 
+                "ai_messages": str,
+                "user_messages": str
+            },
+            2 :{
+                "session_key": "UserSession NO.2", 
+                "ai_messages": str,
+                "user_messages": str
+            },
+        }
+        """
+        history_dict = {}
+        if self.session_id >= 1:
+            for i in range(1, self.session_id + 1):
+                session_key = "UserSession NO." + str(i)
+                if session_key not in self.store:
+                    continue
+                base_history = self.store[session_key]
+                # 兼容不同历史实现，优先使用 get_messages()
+                messages = (
+                    base_history.get_messages() if hasattr(base_history, "get_messages") else getattr(base_history, "messages", [])
+                )
+
+                ai_contents = []
+                human_contents = []
+                for msg in messages:
+                    msg_type = getattr(msg, "type", None)
+                    if isinstance(msg, HumanMessage) or msg_type == "human":
+                        human_contents.append(getattr(msg, "content", ""))
+                    elif isinstance(msg, AIMessage) or msg_type == "ai":
+                        ai_contents.append(getattr(msg, "content", ""))
+
+                history_dict[i] = {
+                    "session_key": session_key,
+                    "ai_messages": "\n".join(ai_contents),
+                    "user_messages": "\n".join(human_contents),
+                }
+        return history_dict
 
     # Asynchronous print AI's response to terminal, only can be called by self.__Asyncio2terminal__ function
     async def __AsyncioPrintResponseStream2terminal__(self, response):
@@ -84,6 +141,7 @@ class BaseAgent(object):
     def createNewSession(self):
         self.__sessionNumberControl__()
         self.session_id += 1
+        self.__HistoryAppend__("\n", "\n")
 
     # Asynchronous print AI's response to terminal
     def __Asyncio2terminal__(self,
@@ -94,7 +152,7 @@ class BaseAgent(object):
             # 获取异步流
             response = chain_with_message_history.astream(
                 input={"identity": self.agentIdentity, "file_message": file_message, "user_input": user_input},
-                config={"configurable": {"session_id": "UserSession NO." + str(self.session_id)}}
+                config={"configurable": {f"session_id": f"UserSession NO.{self.session_id}"}}
             )
             # 执行异步流
             asyncio.run(self.__AsyncioPrintResponseStream2terminal__(response))
@@ -111,7 +169,7 @@ class BaseAgent(object):
             # 获取同步流
             response = chain_with_message_history.stream(
                 input={"identity": self.agentIdentity, "file_message": file_message, "user_input": user_input},
-                config={"configurable": {"session_id": "UserSession NO." + str(self.session_id)}}
+                config={"configurable": {"session_id": f"UserSession NO.{self.session_id}"}}
             )
             print('\033[32m'+'AI_response: ')
             for chunk in response:
@@ -130,7 +188,7 @@ class BaseAgent(object):
             # 获取异步流
             response = chain_with_message_history.astream(
                 input={"identity": self.agentIdentity, "file_message": file_message, "user_input": user_input},
-                config={"configurable": {"session_id": "UserSession NO." + str(self.session_id)}}
+                config={"configurable": {"session_id": f"UserSession NO.{self.session_id}"}}
             )
             # 执行异步流
             result = asyncio.run(self.__AsyncioPrintResponseStream2buffer__(response))
@@ -150,7 +208,7 @@ class BaseAgent(object):
             # 获取同步流
             response = chain_with_message_history.stream(
                 input={"identity": self.agentIdentity, "file_message": file_message, "user_input": user_input},
-                config={"configurable": {"session_id": "UserSession NO." + str(self.session_id)}}
+                config={"configurable": {"session_id": f"UserSession NO.{self.session_id}"}}
             )
             for chunk in response:
                 str_buffer += chunk
@@ -158,6 +216,7 @@ class BaseAgent(object):
             return result
         except Exception as e:
             raise ValueError(f"LLM wrong! Error:{e}")
+    
 
     @property
     def agentName(self):

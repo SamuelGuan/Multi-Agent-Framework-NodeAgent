@@ -1,14 +1,14 @@
 import csv
 import json
 import math
-from BaseTool import BaseToolProtocol
+from .BaseTool import BaseToolProtocol
 
 class StrFileReadTool(BaseToolProtocol):
 
     '''
     Just for str file, an example of how to program an Agent tool.
     You can customize your tools with father class 'BaseTool'
-    and remember to define the function '_run(self, args)',
+    and remember to define the function run(self, args)',
     don't forget the properties 'name' and 'description'
     '''
 

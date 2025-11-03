@@ -8,7 +8,7 @@ and instantiate agents with some properties.
 import re
 import ast
 import typing as tp
-from BaseAgent import BaseAgent
+from Multi_Agent_Framework_NodeAgent_main.BaseAgent import BaseAgent
 
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
@@ -16,7 +16,8 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.output_parsers import StrOutputParser
 
-from AgentTools import StrFileReadTool, Plus, Sub, Mul, Div
+from Multi_Agent_Framework_NodeAgent_main.AgentTools import StrFileReadTool, Plus, Sub, Mul, Div
+from Multi_Agent_Framework_NodeAgent_main.BaseTool import BaseToolProtocol
 
 ##################################################################################################
 ##################   ZhiPu @                                          ############################
@@ -60,8 +61,8 @@ class ZhiPu_LLM(BaseAgent):
 
         # utilize AI chatting history, constructing the runnable chain
         self.chain_with_message_history = RunnableWithMessageHistory(
-            self.runnable_chain,
-            super().__getSessionHistory__,
+            runnable=self.runnable_chain,
+            get_session_history=super().__getSessionHistory__,
             input_messages_key="user_input",
             history_messages_key="history",
         )
@@ -187,7 +188,7 @@ class ZhiPu_LLM(BaseAgent):
         else:
             return message['ai_context']
 
-    def loadTools(self, tool_list:list)->str:
+    def loadTools(self, tool_list:list[BaseToolProtocol])->str:
         '''
         load the tool to the agent, return a string
         which is the regularized tool list information
@@ -199,7 +200,7 @@ class ZhiPu_LLM(BaseAgent):
 
         for tool in tool_list:
             tool_info_dict = tool.getToolInfo()
-            if not isinstance(tool_info_dict,dict):
+            if not isinstance(tool_info_dict, dict):
                 raise ValueError(f"getToolInfo method in {tool} doesn't return dict!")
             if tool_info_dict["name"] is None or tool_info_dict["purposes"] is None:
                 raise ValueError(f"Custom tool {tool} lacks name or purposes! Please check them!")
@@ -208,9 +209,9 @@ class ZhiPu_LLM(BaseAgent):
                     _args = 'None'
                 else:
                     _args = str(tool_info_dict["args_dict"])
-                reference += ("{'tool_name:'" + tool_info_dict["name"]
-                              + ",purposes:" + tool_info_dict["purposes"]
-                              + ",args_dict" + _args
+                reference += ("{'tool_name':" + tool_info_dict["name"]
+                              + ",'purposes':" + tool_info_dict["purposes"]
+                              + ",'args_dict':" + _args
                               + '}\n')
                 self.tool_list[tool_info_dict["name"]] = tool
 
@@ -661,7 +662,8 @@ class DouBao_LLM(BaseAgent):
                  agent_identity:tp.Optional[str] = "ChatBot",
                  max_session_number:tp.Optional[int] = 5,
                  max_history_number:tp.Optional[int] = 5,
-                 llm_base_url:tp.Optional[str] = 'https://ark.cn-beijing.volces.com/api/v3'
+                 llm_base_url:tp.Optional[str] = 'https://ark.cn-beijing.volces.com/api/v3',
+                 memorize:tp.Optional[bool] = True
                  ):
 
         super().__init__(
@@ -697,13 +699,17 @@ class DouBao_LLM(BaseAgent):
         self.is_load_tools = False
         self.tool_list = {}
 
+        self.session_id = 0
+
+        self.memorize = memorize
+
     def chatStream_2Terminal(self, input: str,
                         file = None,
-                        output_mode = None,
-                        reference = None
+                        reference = None,
+                        output_mode:tp.Optional[str] = "async",
                         ) -> None:
         '''
-        output to terminal
+        output to terminal, only support chatting instead of agent or multi-model llm.
         support 2 different AI output mode: synchronous or asynchronous
         :param input: str
         :param file: str
@@ -772,7 +778,7 @@ class DouBao_LLM(BaseAgent):
 
         #file_message also response to the reference
         if reference is not None:
-                file_message += reference
+            file_message += reference
 
         # judge whether use tools, use->change the prompt template
         if self.is_load_tools:
@@ -807,10 +813,25 @@ class DouBao_LLM(BaseAgent):
                 suitable_tool_name = ai_context['tool_name']
                 ai_context.pop('tool_name')
                 suitable_tool_parameters = ai_context
+                if self.memorize:
+                    super().__HistoryAppend__(
+                        ai_context = f"Last term use tool called function with the tool name {suitable_tool_name} having parameters {suitable_tool_parameters}",
+                        user_message = f"user_input: {input}\n file_message: {file_message}\n"
+                    )
                 return suitable_tool_name, suitable_tool_parameters
             else:
+                if self.memorize:
+                    super().__HistoryAppend__(
+                        ai_context = f"None",
+                        user_message = f"user_input: {input}\n file_message: {file_message}\n"
+                    )
                 return None
         else:
+            if self.memorize:
+                super().__HistoryAppend__(
+                    ai_context = message['ai_context'],
+                    user_message = f"user_input: {input}\n file_message: {file_message}\n"
+                )
             return message['ai_context']
 
     def loadTools(self, tool_list:list)->str:
@@ -861,9 +882,32 @@ class DouBao_LLM(BaseAgent):
         else:
             tool_result = self.tool_list[tool_name].run(**tool_args_dict)
         return tool_result
+    
+    def createNewChatSession(self) -> int:
+        try:
+            super().createNewSession()
+            self.session_id = super().session_id
+            return self.session_id
+        except Exception as e:
+            print(e)
+            return None
+    
+    def getAllHistory(self) -> dict:
+        return super().__ListingAllHistory__()
+    
+    def getCurrentSessionID(self) -> int:
+        return super().llm_session_id
+    
+
+
+
 
 class Deepseek_LLM(object):
     pass
 
 class Grok_LLM(object):
+    pass
+
+
+if __name__ == '__main__':
     pass

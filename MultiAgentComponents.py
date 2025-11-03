@@ -1,5 +1,6 @@
 import time
 import typing as tp
+from . import BaseAgent
 
 '''
 The main concept of NodeAgent is one agent one tool
@@ -15,16 +16,16 @@ just customize your asynchronous application if you want!
 
 class AgentNode(object):
     def __init__(self,
-                 llm,
-                 output_mode:tp.Optional[str]=None,
-                 tool_list:tp.Optional[any]=None,
-                 max_waiting_time:tp.Optional[float]=None,
-                 sleep_time:tp.Optional[float]=1,
-                 print_agent_execute_result:tp.Optional[bool]=False,
-                 require_graph:tp.Optional[bool]=False):
+                llm:BaseAgent,
+                output_mode:tp.Optional[str]=None,
+                tool_list:tp.Optional[callable]=None,
+                max_waiting_time:tp.Optional[float]=None,
+                sleep_time:tp.Optional[float]=1,
+                print_agent_execute_result:tp.Optional[bool]=False,
+                require_graph:tp.Optional[bool]=False):
 
         '''
-        :param llm: Large Language Model
+        :param llm: Large Language Model instance
         :param output_mode: Async or Sync
         :param tool_list: a list of tool function
         :param max_waiting_time: the maximum wait time in queue
@@ -131,20 +132,22 @@ class AgentNode(object):
                                       tool_args_dict=suitable_tool_parameters)
 
                 print('\033[36m'+f"system info:Agent 【{self.llm.agentName}】 running for {time.time() - start_time}s"+'\033[0m')
-                self.__switchState__('Free')
                 if self.print_agent_execute_result:
                     print('\033[32m' + " Agent Info: " + str(tool_call_result) + '\033[0m')
+                self.__switchState__('Free')
                 return tool_call_result
 
             # if suitable_tool_info is str, maybe it is chatting bot
             elif isinstance(suitable_tool_info, str):
                 if self.print_agent_execute_result:
                     print('\033[32m' +"Agent Info: "+ str(suitable_tool_info)+ '\033[0m')
+                self.__switchState__('Free')
                 return suitable_tool_info
 
             # else suitable_tool_info is None, it does couldn't match the task with proper tool
             else:
                 print('\033[36m'+f"system info:Agent 【{self.llm.agentName}】 return Nothing. Maybe no suitable tool!"+'\033[0m')
+                self.__switchState__('Free')
                 return None
 
 
@@ -203,4 +206,30 @@ class AgentNode(object):
 
 # for autograph framework
 class AgentTeam(object):
-    pass
+    def __init__(self, agent_list: List[AgentNode]) -> None:
+        self.agent_list = agent_list
+        self.team_chat_history = {}
+        if hasattr(agent_list[0].llm, 'getCurrentSessionID'):
+            self.session_id = agent_list[0].llm.getCurrentSessionID()
+        else:
+            self.session_id = 1
+
+    def createNewChatSession(self) -> int:
+        for agent in self.agent_list:
+            self.session_id = agent.llm.createNewChatSession()
+        return self.session_id
+    
+    def getTeamChatHistory(self) -> dict:
+        return self.team_chat_history
+    
+    def teamChatHistoryAppend(self, human_input: str, last_agent_response: str, session_id: int = -1, kwargs: dict = None) -> None:
+        if session_id == -1:
+            session_id = self.session_id
+        if kwargs is None:
+            self.team_chat_history[session_id].append({'human_input':human_input, 'last_agent_response':last_agent_response})
+        else:
+            self.team_chat_history[session_id].append({'human_input':human_input, 'last_agent_response':last_agent_response, **kwargs})
+    
+    def workflowTrajectory(self):
+        # TODO: 教师团队工作流轨迹
+        pass

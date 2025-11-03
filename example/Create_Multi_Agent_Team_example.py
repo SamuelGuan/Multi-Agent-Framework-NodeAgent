@@ -103,7 +103,7 @@ if __name__ == '__main__':
     # call AgentNode
     agent_1("What is your name and what is your identity?")
 
-    agent_2("小明喜欢吃什么？", file_path='test_str_File/testFile_self_introduction.json')
+    agent_2("小明喜欢吃什么？", file_path=file)
 
     response = agent_3("What is the color I wear today?", reference="I wear yellow today.")
     print(response) # we also can get response from chatting-bot
