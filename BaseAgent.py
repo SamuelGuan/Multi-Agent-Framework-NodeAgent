@@ -13,14 +13,9 @@ from langchain_core.prompts import (
 
 class BaseAgent(object):
     '''
-    The BaseAgent class is the abstract class of downstream agents which
-    must inherit from this class
+    BaseAgent 类是下游代理的抽象类，
+    所有下游代理必须继承此类。
     '''
-    prompt_template = [
-        SystemMessagePromptTemplate.from_template("your identity: {identity}, response with reference content: {file_message}"),
-        MessagesPlaceholder(variable_name="history"),
-        HumanMessagePromptTemplate.from_template("{user_input}"),
-    ]
 
     def __init__(self,
                 agent_name:tp.Optional[str] = None,
@@ -31,6 +26,11 @@ class BaseAgent(object):
                 max_history_number:tp.Optional[int] = 5,
                 base_url:tp.Optional[str] = None,
                 ):
+        self.prompt_template = [
+            SystemMessagePromptTemplate.from_template("your identity: {identity}, response with reference content: {file_message}"),
+            MessagesPlaceholder(variable_name="history"),
+            HumanMessagePromptTemplate.from_template("{user_input}"),
+        ]
         self.agent_name = agent_name
         self.agent_identity = agent_identity
         self.temperature = temperature
@@ -128,6 +128,12 @@ class BaseAgent(object):
                     "user_messages": "\n".join(human_contents),
                 }
         return history_dict
+    
+    def __HistoryLoad__(self, messages: list[dict[str, str]]):
+        for message in messages:
+            ai_message = message['ai_message']
+            user_message = message['user_message']
+            self.__HistoryAppend__(ai_message, user_message)
 
     # Asynchronous print AI's response to terminal, only can be called by self.__Asyncio2terminal__ function
     async def __AsyncioPrintResponseStream2terminal__(self, response):
@@ -216,6 +222,10 @@ class BaseAgent(object):
             return result
         except Exception as e:
             raise ValueError(f"LLM wrong! Error:{e}")
+    
+    @property
+    def get_prompt_template(self):
+        return self.prompt_template
     
 
     @property
