@@ -222,6 +222,10 @@ class BaseAgent(object):
             return result
         except Exception as e:
             raise ValueError(f"LLM wrong! Error:{e}")
+            
+    @property
+    def get_prompt_template(self):
+        return self.prompt_template
     
     @property
     def get_prompt_template(self):
@@ -309,3 +313,4 @@ class __ChatMessageHistory__(BaseChatMessageHistory):
 
     def add_ai_message(self, message):
         self.messages.append(AIMessage(content=message))
+
