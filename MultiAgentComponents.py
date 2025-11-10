@@ -1,6 +1,7 @@
 import time
 import typing as tp
 from . import BaseAgent
+from typing import List, Optional, Dict, Any
 
 '''
 The main concept of NodeAgent is one agent one tool
@@ -212,7 +213,7 @@ class AgentTeam(object):
         if hasattr(agent_list[0].llm, 'getCurrentSessionID'):
             self.session_id = agent_list[0].llm.getCurrentSessionID()
         else:
-            self.session_id = 1
+            self.session_id = 0
 
     def createNewChatSession(self) -> int:
         for agent in self.agent_list:
@@ -225,6 +226,8 @@ class AgentTeam(object):
     def teamChatHistoryAppend(self, human_input: str, last_agent_response: str, session_id: int = -1, kwargs: dict = None) -> None:
         if session_id == -1:
             session_id = self.session_id
+        if session_id not in self.team_chat_history:
+            self.team_chat_history[session_id] = []
         if kwargs is None:
             self.team_chat_history[session_id].append({'human_input':human_input, 'last_agent_response':last_agent_response})
         else:

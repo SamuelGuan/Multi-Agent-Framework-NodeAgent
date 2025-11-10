@@ -38,20 +38,20 @@ class BaseAgent(object):
         self.llm_url = base_url
         # storing the history
         self.session_id = 0
-        self.store = dict[str, BaseChatMessageHistory]()
-        self.createNewSession()
+        self.store = dict[str, __ChatMessageHistory__]()
         # ensure the max_session_number is positive
         assert max_session_number > 0
         self.max_session_number = max_session_number
         # ensure the max_history_number is positive
         assert max_history_number > 0
         self.max_history_number = max_history_number
+        self.createNewSession()
 
     # get the chatting history
     def __getSessionHistory__(self, session_id: int = 1) -> BaseChatMessageHistory:
         session_key = f"UserSession NO.{session_id}"
         if session_key not in self.store.keys():
-            self.store[session_key] = BaseChatMessageHistory()
+            self.store[session_key] = __ChatMessageHistory__()
         return self.store[session_key]
 
     # ensure the number of session wouldn't greater than the max_session_number,
@@ -59,7 +59,7 @@ class BaseAgent(object):
     def __sessionNumberControl__(self)->None:
         if len(self.store.keys()) >= self.max_session_number:
             self.store.pop("UserSession NO.1")
-            tmpStore = dict[str, BaseChatMessageHistory]()
+            tmpStore = dict[str, __ChatMessageHistory__]()
             for key in self.store.keys():
                 if not isinstance(key, str):
                     raise ValueError("self.store.key is not str!")
@@ -73,10 +73,16 @@ class BaseAgent(object):
         if session_id == -1:
             session_id = self.session_id
         session_key = f"UserSession NO.{session_id}"
-        history:BaseChatMessageHistory = self.__getSessionHistory__(session_key)
+        history: __ChatMessageHistory__ = self.__getSessionHistory__(session_key)
         history.add_user_message(user_message)
         history.add_ai_message(ai_message)
         self.store[session_key] = history
+    
+    # create new session
+    def createNewSession(self):
+        self.__sessionNumberControl__()
+        self.session_id += 1
+        self.__HistoryAppend__("\n", "\n")
     
 
     def __ListingAllHistory__(self) -> dict:
@@ -136,12 +142,6 @@ class BaseAgent(object):
             str_buffer += chunk
         result['ai_context'] = str_buffer
         return result
-
-    # create new session
-    def createNewSession(self):
-        self.__sessionNumberControl__()
-        self.session_id += 1
-        self.__HistoryAppend__("\n", "\n")
 
     # Asynchronous print AI's response to terminal
     def __Asyncio2terminal__(self,
@@ -279,3 +279,23 @@ class BaseAgent(object):
     @abstractmethod
     def executionTool(self,*args,**kwargs):
         pass
+
+class __ChatMessageHistory__(BaseChatMessageHistory):
+    def __init__(self) -> None:
+        super().__init__()
+        self.messages: list[HumanMessage|AIMessage] = []
+    
+    def clear(self):
+        self.messages: list[HumanMessage|AIMessage] = []
+    
+    def add_message(self, message):
+        super().add_messages(message)
+    
+    def get_messages(self) -> list[HumanMessage|AIMessage]:
+        return self.messages
+
+    def add_user_message(self, message):
+        self.messages.append(HumanMessage(content=message))
+
+    def add_ai_message(self, message):
+        self.messages.append(AIMessage(content=message))

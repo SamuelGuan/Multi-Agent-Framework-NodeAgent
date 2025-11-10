@@ -11,7 +11,7 @@ import typing as tp
 from Multi_Agent_Framework_NodeAgent_main.BaseAgent import BaseAgent
 
 from langchain_openai import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.output_parsers import StrOutputParser
@@ -829,7 +829,7 @@ class DouBao_LLM(BaseAgent):
         else:
             if self.memorize:
                 super().__HistoryAppend__(
-                    ai_context = message['ai_context'],
+                    ai_message = message['ai_context'],
                     user_message = f"user_input: {input}\n file_message: {file_message}\n"
                 )
             return message['ai_context']
