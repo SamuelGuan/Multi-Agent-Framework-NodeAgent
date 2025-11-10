@@ -54,7 +54,7 @@ class ZhiPu_LLM(BaseAgent):
         )
 
         # load the prompt_template in father class "BaseAgent"
-        self.prompt = ChatPromptTemplate(super().prompt_template)
+        self.prompt = ChatPromptTemplate(super().get_prompt_template)
 
         # constructing LCEL chain
         self.runnable_chain = self.prompt | self.llm_model | StrOutputParser()
@@ -264,7 +264,7 @@ class Qwen_LLM(BaseAgent):
             openai_api_key=api_key,
             openai_api_base=llm_base_url
         )
-        self.prompt = ChatPromptTemplate(super().prompt_template)
+        self.prompt = ChatPromptTemplate(super().get_prompt_template)
         # constructing LCEL chain
         self.runnable_chain = self.prompt | self.llm_model | StrOutputParser()
         # utilize AI chatting history, constructing the runnable chain
@@ -472,7 +472,7 @@ class Kimi_LLM(BaseAgent):
             openai_api_key=api_key,
             openai_api_base=llm_base_url
         )
-        self.prompt = ChatPromptTemplate(super().prompt_template)
+        self.prompt = ChatPromptTemplate(super().get_prompt_template)
         # constructing LCEL chain
         self.runnable_chain = self.prompt | self.llm_model | StrOutputParser()
         # utilize AI chatting history, constructing the runnable chain
@@ -683,7 +683,7 @@ class DouBao_LLM(BaseAgent):
             openai_api_base=llm_base_url
         )
 
-        self.prompt = ChatPromptTemplate(super().prompt_template)
+        self.prompt = ChatPromptTemplate(super().get_prompt_template)
         # constructing LCEL chain
         self.runnable_chain = self.prompt | self.llm_model | StrOutputParser()
 
@@ -913,3 +913,4 @@ class Grok_LLM(object):
 if __name__ == '__main__':
 
     pass
+
