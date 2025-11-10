@@ -897,8 +897,9 @@ class DouBao_LLM(BaseAgent):
     
     def getCurrentSessionID(self) -> int:
         return super().llm_session_id
-    
 
+    def loadChatHistory(self, messages: list[dict[str, str]]):
+        super().__HistoryLoad__(messages)
 
 
 
@@ -910,4 +911,5 @@ class Grok_LLM(object):
 
 
 if __name__ == '__main__':
+
     pass
